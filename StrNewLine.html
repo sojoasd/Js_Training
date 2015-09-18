@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>StrNewLine</title>
+    <script src="jquery-1.11.2.min.js"></script>
+    <script>
+        $(function () {
+
+            Object.prototype.NewLine = function () {
+
+                var _self = this;
+
+                for (var i = 0; i < _self.length; i++) {
+                    if ((typeof _self[i].className) === 'string' && (typeof _self) === 'object') {
+                        var str = _self[i].innerHTML.replace(/[\s]+/g, " ");
+
+                        var ary = str.split(" ");
+
+                        var newStr = "";
+                        for (var m = 0; m < ary.length - 1 ; m++) {
+                            newStr += "<p>" + ary[m] + "</p>";
+                        }
+
+                        $(_self[i]).parent().append(newStr);
+                        $(_self[i]).remove();
+                    }
+                }
+            };
+
+            $('.worb').NewLine();
+
+        });
+    </script>
+</head>
+<body>
+    <div style="background-color:powderblue">
+        <p class="worb">abc abc          abc     </p>
+    </div>
+    <div style="background-color:salmon">
+        <p class="worb">sss aaa          fff     </p>
+    </div>
+</body>
+</html>
