@@ -8,8 +8,10 @@
     <script>
         $(function () {
 
+            // 將物件擴充一個 function，專門用來做「遇到空白就換行」的功能
             Object.prototype.NewLine = function () {
 
+                // 不知道會不會與外界或原始鏈上的 this 相衝，故先獨立一個物件
                 var _self = this;
 
                 for (var i = 0; i < _self.length; i++) {
@@ -23,6 +25,7 @@
                             newStr += "<p>" + ary[m] + "</p>";
                         }
 
+                        // 產生每個字的 dom，並移除原標籤字串
                         $(_self[i]).parent().append(newStr);
                         $(_self[i]).remove();
                     }
