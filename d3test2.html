@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>d3test2</title>
+    <script type="text/javascript" src="d3.v3.js"></script>
+    <script src="jquery-1.11.2.min.js"></script>
+</head>
+<body>
+</body>
+</html>
+<script>
+    var w = 500;
+    var h = 500;
+    var barpadding = 1;
+
+    var data = [
+                    [22, 50], [88, 22], [57, 188], [177, 300], [222, 255]
+    ];
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr({
+                    "width": w,
+                    "height": h
+                });
+
+    svg.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr({
+            "cx": function (arr) {
+                return arr[0];
+            },
+            "cy": function (arr) {
+                return arr[1];
+            },
+            "r": function (arr) {
+                return Math.sqrt(h - arr[1]);
+            }
+        });
+</script>

@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>d3test</title>
+    <script type="text/javascript" src="d3.v3.js"></script>
+    <script src="jquery-1.11.2.min.js"></script>
+</head>
+<body>
+    <!--<p>123</p>-->
+</body>
+</html>
+<script>
+
+    //d3.json("http://localhost:5705/API/ApiData/", function (error, data) {
+    //    if (error) {
+    //        console.log(error);
+    //    } else {
+    //        console.log(data);
+    //    }
+    //});
+
+    var w = 400;
+    var h = 300;
+    var barpadding = 1;
+
+    var data = [6, 12, 16, 33, 19, 20, 14, 24, 7];
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr({
+                    "width": w,
+                    "height": h
+                });
+
+    svg.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr({
+            "width": w / data.length - barpadding,
+            "height": function (value) {
+                return value * 4;
+            },
+            "fill": function (value) {
+                return "rgb(0, 0, " + (value * 10) + ")";
+            },
+            "x": function (value, index) {
+                return index * (w / data.length);
+            },
+            "y": function (value) {
+                return h - (value * 4);
+            }
+        });
+
+    svg.selectAll("text")
+        .data(data)
+        .enter()
+        .append("text")
+        .text(function (value) {
+            return value;
+        })
+        .attr({
+            "x": function (value, index) {
+                return index * (w / data.length) + 12;
+            },
+            "y": function (value) {
+                return h - (value * 4) + 14;
+            },
+            "text-align": "center",
+            "font-size": "14px",
+            "fill": "white"
+        });
+</script>
