@@ -49,22 +49,24 @@
     { x: 6, y: 2.33 },
     { x: 7, y: 3.79 },
     { x: 8, y: 2.61 },
-    { x: 9, y: 2.15 }
+    { x: 9, y: 4.22 }
     ];
 
-    var left_padding = 35;
-    var bottom_padding = 20;
+    console.log(data);
 
     // 只包含趨勢圖
     var width = 800,
         height = 450;
 
+    var left_padding = width / 20;
+    var bottom_padding = height / 20;
+
     // 包含趨勢圖與XY軸
     var svg = d3.select("body")
                 .append("svg")
                 .attr({
-                    "width": width + 50,
-                    "height": height + 50
+                    "width": width + left_padding * 2,
+                    "height": height + bottom_padding * 3
                 })
                 .style({
                     'border': '1px solid #000'
@@ -208,7 +210,7 @@
 
             // 取得點的位置 [scaleX(d.x),scaleY(d.y)]
             var xPosition = scaleX(d.x) + left_padding * 2;
-            var yPosition = scaleY(d.y) - bottom_padding * 2;
+            var yPosition = scaleY(d.y) + bottom_padding / 2;
 
             d3.select("#tooltip")
 						.style("left", xPosition + "px")

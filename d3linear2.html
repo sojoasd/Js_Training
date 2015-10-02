@@ -4,7 +4,610 @@
 <head>
     <meta charset="utf-8" />
     <title>linear2</title>
+    <script type="text/javascript" src="d3.v3.js"></script>
+    <script src="jquery-1.11.2.min.js"></script>
+    <style type="text/css">
+        circle:hover {
+            fill: red;
+            stroke: red;
+        }
+
+        path:hover {
+            stroke: red;
+        }
+
+        #tooltip {
+            position: absolute;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+            #tooltip.hidden {
+                display: none;
+            }
+    </style>
 </head>
 <body>
+    <div id="tooltip" class="hidden">
+        <p><span id="value"></span></p>
+    </div>
+    <div id="DivSvg"></div>
+
+    <!--<div style="width:772px">
+        <table>
+            <tr>
+                <th>Morganasdada</th>
+                <th>
+                    <svg style="height:30px;width:30px">
+                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                    </svg>
+                </th>
+                <th>Morganasdada</th>
+                <th>
+                    <svg style="height:30px;">
+                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                    </svg>
+                </th>
+                <th>Morganasdada</th>
+                <th>
+                    <svg style="height:30px;">
+                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                    </svg>
+                </th>
+            </tr>
+        </table>
+        <div style="background-color:aqua;margin:10px;height:auto;width:772px;text-align:center">
+            <div style="background-color:aqua;margin:10px;width:220px;float:left">
+                <table>
+                    <tr>
+                        <th>Morganasdada</th>
+                        <th>
+                            <svg style="height:30px;width:30px">
+                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                            </svg>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div style="background-color:aqua;margin:10px;width:220px;float:left">
+                <table>
+                    <tr>
+                        <th>Morganasdada</th>
+                        <th>
+                            <svg style="height:30px;width:30px">
+                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                            </svg>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div style="background-color:aqua;margin:10px;width:220px;float:left">
+                <table>
+                    <tr>
+                        <th>Morganasdada</th>
+                        <th>
+                            <svg style="height:30px;width:30px">
+                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                            </svg>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div style="background-color:aqua;margin:10px;width:220px;float:left">
+                <table>
+                    <tr>
+                        <th>Morganasdada</th>
+                        <th>
+                            <svg style="height:30px;width:30px">
+                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                            </svg>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div style="background-color:aqua;margin:10px;width:220px;float:left">
+                <table>
+                    <tr>
+                        <th>Morganasdada</th>
+                        <th>
+                            <svg style="height:30px;width:30px">
+                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
+                            </svg>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>-->
+    <!--<button onclick="$('path').remove();
+    $('circle').remove();">
+        clear
+    </button>-->
 </body>
 </html>
+<script>
+
+    //取得陣列中最大與最小值
+    Array.prototype.max = function () {
+        return Math.max.apply(null, this);
+    };
+
+    Array.prototype.min = function () {
+        return Math.min.apply(null, this);
+    };
+    //console.log($('#DivSvg > svg')[0].offsetWidth);
+    $(function () {
+        $.getJSON("http://localhost:5705/API/ApiFun/", function (AjaxData) {
+            //AjaxData[0].cuscolor = 'red';
+            RuleData = {
+                'height': 400,
+                'width': 800,
+                'dom': '#DivSvg',
+                //'Xcount': 10,
+                'Ycount': 10,
+                'StrokeWidth': 5
+            };
+            create_chart().init(AjaxData, RuleData);
+        });
+
+        function create_chart() {
+
+            var Xmax; // X 軸的最大值
+            var Xmin; // X 軸的最小值
+            var Ymax; // Y 軸的最大值
+            var Ymin; // Y 軸的最小值
+            var Lmax; // 最大資料長度，可能有的資料較多有的資料較少，這裡取最多的
+
+            // 整個 svg 圖表的長與寬
+            var height;
+            var width;
+
+            var left_padding; //預留空間給 Y 軸
+            var bottom_padding; //預留空間給 X 軸
+
+            var svg;
+            var svgDetailID;
+            var svgDetailColor = new Array(); // 存放 svg 的曲線是什麼顏色，用物件存放(顏色對應資料名稱)
+            var scaleX; // X 軸尺度
+            var scaleY; // Y 軸尺度
+            var Xcount; // 想要 X 軸出現的刻度數，預設 10
+            var Ycount; // 想要 Y 軸出現的刻度數，預設 10
+            var line;
+            var StrokeWidth; // 線條的粗度，這會影響線條上的 point 大小，預設 3
+
+            var xAxis;
+            var yAxis;
+            var yAxisGrid; // 背景格線
+            var xAxisGrid;
+
+            var create_svg_frame = function (dom) {
+                svg = d3.select(dom)
+                .append("svg")
+                .attr({
+                    "width": width,
+                    "height": height
+                })
+                .style({
+                    'border': '1px solid #000'
+                });
+
+                // ※ range 扣多少 padding，下面的 Geid 線就要扣多少 (tickSize())，因為要跟軸線等長
+                scaleX = d3.scale.linear()
+                               .range([0, width - left_padding * 5])
+                               .domain([Xmin, Xmax]);
+
+                scaleY = d3.scale.linear()
+                               .range([height - (bottom_padding * 5), 0])
+                               .domain([Ymin - Math.round(Ymin / 2), Ymax + Math.round(Ymax / 2)]);
+
+                line = d3.svg.line()
+                              .x(function (d) {
+                                  return scaleX(d.x);
+                              })
+                              .y(function (d) {
+                                  return scaleY(d.y);
+                              });
+
+                /* 建立 X 軸 */
+                xAxis = d3.svg.axis()
+                                .scale(scaleX)
+                                .orient("bottom")
+                                .ticks(Xcount);
+
+                /* 建立 Y 軸 */
+                yAxis = d3.svg.axis()
+                                .scale(scaleY)
+                                .orient("left")
+                                .ticks(Ycount);
+
+                /* 建立 X 軸的背景線條 */
+                xAxisGrid = d3.svg.axis()
+                      .scale(scaleX)
+                      .orient("bottm")
+                      .ticks(Xcount)
+                      .tickFormat("") // tickFormat 針對每一個刻度的數字，可設定為空值
+                      .tickSize(-height + (bottom_padding * 5), 0);
+
+                /* 建立 Y 軸的背景線條 */
+                yAxisGrid = d3.svg.axis()
+                      .scale(scaleY)
+                      .orient("left")
+                      .ticks(Ycount)
+                      .tickFormat("") // tickFormat 針對每一個刻度的數字，可設定為空值
+                      .tickSize(-width + (left_padding * 5), 0);
+            };
+
+            var create_XY = function () {
+
+                svg.append('g')
+                     .call(xAxis)
+                     .attr({
+                         'fill': 'none',
+                         'stroke': '#000',
+                         'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
+                     })
+                     // 將軸線上的文字或數字做變化
+                     .selectAll('text')
+                     .attr({
+                         'fill': '#000',
+                         'stroke': 'none',
+                         'transform': function (d) {
+                             return "translate(" + (this.getBBox().height * -1) + "," + this.getBBox().height + ")rotate(-45)";
+                         }
+                     }).style({
+                         'font-size': '11px'
+                     });
+
+                svg.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "translate(" + (width / 2) + "," + (height - (bottom_padding)) + ")")
+                    .text("( Year )");
+
+                svg.append('g')
+                    .call(yAxis)
+                    .attr({
+                        'fill': 'none',
+                        'stroke': '#000',
+                        'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
+                    })
+                    .selectAll('text')
+                    .attr({
+                        'fill': '#000',
+                        'stroke': 'none',
+                    }).style({
+                        'font-size': '11px'
+                    });
+
+                svg.append("text")
+                   .attr("text-anchor", "middle")
+                   .attr("transform", "translate(" + (left_padding / 2) + "," + (height / 2) + ")rotate(-90)")
+                   .text("( Nav / $ )");
+
+                svg.append('g')
+                     .call(xAxisGrid)
+                     .attr({
+                         'fill': 'none',
+                         'stroke': 'rgba(0,0,0,.1)',
+                         'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
+                     });
+
+                svg.append('g')
+                     .call(yAxisGrid)
+                     .attr({
+                         'fill': 'none',
+                         'stroke': 'rgba(0,0,0,.1)',
+                         'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
+                     });
+            };
+
+            var create_line = function (data, color) {
+                var path = svg.append('path')
+                    .attr({
+                        'd': line(data),
+                        'stroke': color,
+                        'fill': 'none',
+                        'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
+                    })
+                    .style('stroke-width', StrokeWidth) // 趨勢線變粗
+                    .transition()
+                    .duration(1000)
+                    .attrTween('d', function () {
+                        var interpolate = d3.scale.quantile()
+                                            .domain([0, 1])
+                                            .range(d3.range(1, data.length + 1));
+                        return function (t) {
+                            if (t === 1) {
+                                create_point(data, path, color);
+                            }
+                            return line(data.slice(0, interpolate(t)));
+                        };
+                    });
+            };
+
+            var create_point = function (data, path, color) {
+                svg.selectAll("path circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr({
+                        "cx": function (d) {
+                            return scaleX(d.x);
+                        },
+                        "cy": function (d) {
+                            return scaleY(d.y);
+                        },
+                        "r": function (d) {
+                            return Math.sqrt(Math.pow(StrokeWidth, 2));
+                        },
+                        'stroke': color,
+                        'fill': color,
+                        'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
+                    })
+                    .on("mouseover", function (d) {
+                        $(this).attr({
+                            "r": function () {
+                                return Math.sqrt(Math.pow(StrokeWidth, 2) * 2);
+                            }
+                        });
+
+                        // 取得點的位置 [scaleX(d.x),scaleY(d.y)]
+                        var xPosition = scaleX(d.x) + left_padding * 3;
+                        var yPosition = scaleY(d.y) + bottom_padding / 2;
+
+                        d3.select("#tooltip")
+                                    .style("left", xPosition + "px")
+                                    .style("top", yPosition + "px")
+                                    .select("#value")
+                                    .text("x: " + d.x + "; y: " + d.y);
+                        d3.select("#tooltip").classed("hidden", false);
+                    })
+                    .on("mouseout", function () {
+                        $(this).attr({
+                            "r": function () {
+                                return Math.sqrt(Math.pow(StrokeWidth, 2));
+                            }
+                        });
+                        d3.select("#tooltip").classed("hidden", true);
+                    });
+            };
+
+            // 建立 Detail 的區塊
+            var create_detail_dom = function (dom) {
+                var svgNextDom = $(dom).next();
+                var svgDomID = $(dom)[0].id;
+                if (svgNextDom[0].nodeName === 'SCRIPT') {
+                    $(dom).after('<div id="' + svgDomID + 'Detail"></div>');
+                } else {
+                    svgNextDom.before('<div id="' + svgDomID + 'Detail"></div>');
+                }
+
+                svgDetailID = svgDomID + 'Detail';
+
+                $('#' + svgDomID + 'Detail')
+                    .css({ 'margin-bottom': '1%' })
+                    .attr({ 'width': width });
+            };
+
+            // 設定 X 與 Y 軸的刻度數、曲線的粗度
+            var set_pre_data = function (RuleData) {
+                if (typeof RuleData.Xcount !== 'undefined' && typeof RuleData.Xcount === 'number') {
+                    Xcount = RuleData.Xcount;
+                } else {
+                    Xcount = 5;
+                }
+
+                if (typeof RuleData.Ycount !== 'undefined' && typeof RuleData.Ycount === 'number') {
+                    Ycount = RuleData.Ycount;
+                } else {
+                    Ycount = 5;
+                }
+
+                if (typeof RuleData.StrokeWidth !== 'undefined' && typeof RuleData.StrokeWidth === 'number') {
+                    StrokeWidth = RuleData.StrokeWidth;
+                } else {
+                    StrokeWidth = 3;
+                }
+            };
+
+            return {
+                init: function (AjaxData, RuleData) {
+                    var obj = get_max_min(AjaxData);
+                    Xmax = obj.Xmax;
+                    Xmin = obj.Xmin;
+                    Ymax = obj.Ymax;
+                    Ymin = obj.Ymin;
+                    Lmax = obj.Lmax;
+
+                    width = RuleData.width;
+                    height = RuleData.height;
+
+                    left_padding = RuleData.width / 20;
+                    bottom_padding = RuleData.height / 20;
+
+                    set_pre_data(RuleData);
+
+                    create_svg_frame(RuleData.dom); // 建立 svg 的框架
+                    create_XY(); // 建立 XY 軸
+
+                    for (var i = 0; i < AjaxData.length; i++) {
+                        var color = getRandomColor();
+                        svgDetailColor.push({ 'name': AjaxData[i].name, 'color': color });
+                        create_line(AjaxData[i].data, color);
+                    }
+
+                    //create_detail_dom(RuleData.dom); // 建立 Detail 的區塊
+
+                    //console.log(AjaxData);
+                    //console.log(svgDetailColor);
+
+                    //var $_child = $('#' + svgDetailID).append('<table></table>');
+
+                    svg.append('g')
+                        .attr({
+                            'id': 'gx1',
+                            'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 1 + ')'
+                        });
+
+                    d3.select('svg #gx1').append('rect')
+                        .attr({
+                            'width': 10,
+                            'height': 10,
+                            'fill': 'gold',
+                            'stroke': 'gold',
+                            //'fill-opacity': .5,
+                        });
+
+                    //d3.select('svg #gx1').append("text").text('123');
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '1',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'gold',
+                    //        'stroke': 'gold',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 1 + ')'
+                    //    });
+
+                    //svg.append("text")
+                    //    .attr({
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'transform': 'translate(' + (width - left_padding * 2.5) + ',' + (bottom_padding * 2) * 1 + ')'
+                    //    })
+                    //   .text("Morgan");
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '2',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'blue',
+                    //        'stroke': 'blue',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 2 + ')'
+                    //    });
+
+                    //svg.append("text")
+                    //    .attr({
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'transform': 'translate(' + (width - left_padding * 2.5) + ',' + (bottom_padding * 3.5) * 1 + ')'
+                    //    })
+                    //   .text("ABC");
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '3',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'red',
+                    //        'stroke': 'red',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 3 + ')'
+                    //    });
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '4',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'yellow',
+                    //        'stroke': 'yellow',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 4 + ')'
+                    //    });
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '5',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'silver',
+                    //        'stroke': 'silver',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 5 + ')'
+                    //    });
+
+                    //svg.append('rect')
+                    //    .attr({
+                    //        'id': '6',
+                    //        'width': 10,
+                    //        'height': 10,
+                    //        'fill': 'black',
+                    //        'stroke': 'black',
+                    //        //'fill-opacity': .5,
+                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 6 + ')'
+                    //    });
+
+                    //$_child.append('<span>'++'</span>')
+
+                    //var timer;
+                    //$(window).resize(function () {
+                    //    clearTimeout(timer);
+                    //    timer = setTimeout(function () {
+                    //        clientHeight = $(window).height();
+                    //        clientWidth = $(window).width();
+
+                    //        left_padding = (left_padding * clientWidth) / RuleData.width;
+                    //        bottom_padding = (bottom_padding * clientHeight) / RuleData.height;
+
+                    //    }, 2000);
+                    //});
+
+                }
+            };
+        };
+
+    });
+
+    var get_max_min = function (AjaxData) {
+        var xArr = new Array();
+        var yArr = new Array();
+        var LArr = new Array();
+
+        for (var i = 0; i < AjaxData.length; i++) {
+            var tmpObj = AjaxData[i].data;
+            LArr.push(tmpObj.length);
+            for (var j = 0; j < tmpObj.length; j++) {
+                xArr.push(tmpObj[j].x);
+                yArr.push(tmpObj[j].y);
+            }
+        }
+
+        return {
+            'Lmax': Math.max.apply(null, LArr),
+            'Xmax': Math.max.apply(null, xArr),
+            'Xmin': Math.min.apply(null, xArr),
+            'Ymax': Math.max.apply(null, yArr),
+            'Ymin': Math.min.apply(null, yArr)
+        };
+    };
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+
+        if (color === '#800000' || color === '#8B0000' || color === '#A52A2A' || color === '#B22222'
+            || color === '#DC143C' || color === '#FF0000' || color === '#A42D00' || color === '#880000'
+             || color === '#AA0000' || color === '#CC0000' || color === '#A42D00' || color === '#FF3333'
+             || color === '#C63300' || color === '#E63F00' || color === '#FF5511') {
+            getRandomColor();
+        }
+
+        return color;
+    }
+</script>
