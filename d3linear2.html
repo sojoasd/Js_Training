@@ -42,92 +42,6 @@
     </div>
     <div id="DivSvg"></div>
 
-    <!--<div style="width:772px">
-        <table>
-            <tr>
-                <th>Morganasdada</th>
-                <th>
-                    <svg style="height:30px;width:30px">
-                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                    </svg>
-                </th>
-                <th>Morganasdada</th>
-                <th>
-                    <svg style="height:30px;">
-                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                    </svg>
-                </th>
-                <th>Morganasdada</th>
-                <th>
-                    <svg style="height:30px;">
-                        <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                    </svg>
-                </th>
-            </tr>
-        </table>
-        <div style="background-color:aqua;margin:10px;height:auto;width:772px;text-align:center">
-            <div style="background-color:aqua;margin:10px;width:220px;float:left">
-                <table>
-                    <tr>
-                        <th>Morganasdada</th>
-                        <th>
-                            <svg style="height:30px;width:30px">
-                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                            </svg>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-            <div style="background-color:aqua;margin:10px;width:220px;float:left">
-                <table>
-                    <tr>
-                        <th>Morganasdada</th>
-                        <th>
-                            <svg style="height:30px;width:30px">
-                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                            </svg>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-            <div style="background-color:aqua;margin:10px;width:220px;float:left">
-                <table>
-                    <tr>
-                        <th>Morganasdada</th>
-                        <th>
-                            <svg style="height:30px;width:30px">
-                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                            </svg>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-            <div style="background-color:aqua;margin:10px;width:220px;float:left">
-                <table>
-                    <tr>
-                        <th>Morganasdada</th>
-                        <th>
-                            <svg style="height:30px;width:30px">
-                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                            </svg>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-            <div style="background-color:aqua;margin:10px;width:220px;float:left">
-                <table>
-                    <tr>
-                        <th>Morganasdada</th>
-                        <th>
-                            <svg style="height:30px;width:30px">
-                                <line x1="0" y1="50%" x2="100%" y2="50%" style="stroke:rgb(255,0,0);stroke-width:3" />
-                            </svg>
-                        </th>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>-->
     <!--<button onclick="$('path').remove();
     $('circle').remove();">
         clear
@@ -459,96 +373,41 @@
 
                     d3.select('svg #gx1').append('rect')
                         .attr({
-                            'width': 10,
-                            'height': 10,
+                            'width': StrokeWidth * 2,
+                            'height': StrokeWidth * 2,
                             'fill': 'gold',
                             'stroke': 'gold',
                             //'fill-opacity': .5,
                         });
 
-                    //d3.select('svg #gx1').append("text").text('123');
+                    d3.select('svg #gx1').append("text")
+                        .attr({
+                            'dx': StrokeWidth * 3,
+                            'dy': StrokeWidth * 2
+                        })
+                        .text('Morgan');
 
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '1',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'gold',
-                    //        'stroke': 'gold',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 1 + ')'
-                    //    });
+                    svg.append('g')
+                        .attr({
+                            'id': 'gx2',
+                            'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 2 + ')'
+                        });
 
-                    //svg.append("text")
-                    //    .attr({
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'transform': 'translate(' + (width - left_padding * 2.5) + ',' + (bottom_padding * 2) * 1 + ')'
-                    //    })
-                    //   .text("Morgan");
+                    d3.select('svg #gx2').append('rect')
+                        .attr({
+                            'width': StrokeWidth * 2,
+                            'height': StrokeWidth * 2,
+                            'fill': 'blue',
+                            'stroke': 'blue',
+                            //'fill-opacity': .5,
+                        });
 
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '2',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'blue',
-                    //        'stroke': 'blue',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 2 + ')'
-                    //    });
-
-                    //svg.append("text")
-                    //    .attr({
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'transform': 'translate(' + (width - left_padding * 2.5) + ',' + (bottom_padding * 3.5) * 1 + ')'
-                    //    })
-                    //   .text("ABC");
-
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '3',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'red',
-                    //        'stroke': 'red',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 3 + ')'
-                    //    });
-
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '4',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'yellow',
-                    //        'stroke': 'yellow',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 4 + ')'
-                    //    });
-
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '5',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'silver',
-                    //        'stroke': 'silver',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 5 + ')'
-                    //    });
-
-                    //svg.append('rect')
-                    //    .attr({
-                    //        'id': '6',
-                    //        'width': 10,
-                    //        'height': 10,
-                    //        'fill': 'black',
-                    //        'stroke': 'black',
-                    //        //'fill-opacity': .5,
-                    //        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * 6 + ')'
-                    //    });
+                    d3.select('svg #gx2').append("text")
+                        .attr({
+                            'dx': 15,
+                            'dy': 10
+                        })
+                        .text('ABC');
 
                     //$_child.append('<span>'++'</span>')
 
