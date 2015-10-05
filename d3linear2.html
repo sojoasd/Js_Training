@@ -68,12 +68,13 @@
     //console.log($('#DivSvg > svg')[0].offsetWidth);
 
     var create_chart = function () {
+        var tmpAjaxData;
 
         var Xmax; // X 軸的最大值
         var Xmin; // X 軸的最小值
         var Ymax; // Y 軸的最大值
         var Ymin; // Y 軸的最小值
-        var Lmax; // 最大資料長度，可能有的資料較多有的資料較少，這裡取最多的
+        //var Lmax; // 最大資料長度，可能有的資料較多有的資料較少，這裡取最多的
 
         // 整個 svg 圖表的長與寬
         var height;
@@ -82,6 +83,7 @@
         var left_padding; //預留空間給 Y 軸
         var bottom_padding; //預留空間給 X 軸
 
+        var domName; // svg 區塊的 id
         var svg;
         var svgDetailID;
         var svgDetailColor = new Array(); // 存放 svg 的曲線是什麼顏色，用物件存放(顏色對應資料名稱)
@@ -94,11 +96,13 @@
 
         var xAxis;
         var yAxis;
+        var Xname;
+        var Yname;
         var yAxisGrid; // 背景格線
         var xAxisGrid;
 
-        var create_svg_frame = function (dom) {
-            svg = d3.select(dom)
+        var create_svg = function () {
+            svg = d3.select(domName)
             .append("svg")
             .attr({
                 "width": width,
@@ -107,8 +111,15 @@
             .style({
                 'border': '1px solid #000'
             });
+        };
 
-            // ※ range 扣多少 padding，下面的 Geid 線就要扣多少 (tickSize())，因為要跟軸線等長
+        var create_svg_frame = function (obj) {
+            Xmax = obj.Xmax;
+            Xmin = obj.Xmin;
+            Ymax = obj.Ymax;
+            Ymin = obj.Ymin;
+
+            // ※ range 扣多少 padding，下面的 Grid 線就要扣多少 (tickSize())，因為要跟軸線等長
             scaleX = d3.scale.linear()
                            .range([0, width - left_padding * 5])
                            .domain([Xmin, Xmax]);
@@ -117,6 +128,7 @@
                            .range([height - (bottom_padding * 5), 0])
                            .domain([Ymin - Math.round(Ymin / 2), Ymax + Math.round(Ymax / 2)]);
 
+            /* 建立尺度 */
             line = d3.svg.line()
                           .x(function (d) {
                               return scaleX(d.x);
@@ -160,6 +172,7 @@
                  .call(xAxis)
                  .attr({
                      'fill': 'none',
+                     'class': 'XY_frame',
                      'stroke': '#000',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
                  })
@@ -176,15 +189,19 @@
                  });
 
             svg.append("text")
-                .attr("text-anchor", "middle")
-                .attr("transform", "translate(" + (width / 2) + "," + (height - (bottom_padding)) + ")")
-                .text("( Year )");
+                .attr({
+                    'class': 'XY_frame',
+                    "text-anchor": "middle",
+                    "transform": "translate(" + (width / 2) + "," + (height - (bottom_padding)) + ")"
+                })
+                .text(Xname);
 
             svg.append('g')
                 .call(yAxis)
                 .attr({
                     'fill': 'none',
                     'stroke': '#000',
+                    'class': 'XY_frame',
                     'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
                 })
                 .selectAll('text')
@@ -196,13 +213,17 @@
                 });
 
             svg.append("text")
-               .attr("text-anchor", "middle")
-               .attr("transform", "translate(" + (left_padding / 2) + "," + (height / 2) + ")rotate(-90)")
-               .text("( Nav / $ )");
+               .attr({
+                   'class': 'XY_frame',
+                   "text-anchor": "middle",
+                   "transform": "translate(" + (left_padding / 2) + "," + (height / 2) + ")rotate(-90)"
+               })
+               .text(Yname);
 
             svg.append('g')
                  .call(xAxisGrid)
                  .attr({
+                     'class': 'XY_frame',
                      'fill': 'none',
                      'stroke': 'rgba(0,0,0,.1)',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
@@ -211,6 +232,7 @@
             svg.append('g')
                  .call(yAxisGrid)
                  .attr({
+                     'class': 'XY_frame',
                      'fill': 'none',
                      'stroke': 'rgba(0,0,0,.1)',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
@@ -220,8 +242,10 @@
         //count = 第幾筆資料
         var create_line = function (obj, color, count) {
             var data = obj.data;
+            var pathid = 'path' + obj.id;
             var path = svg.append('path')
                 .attr({
+                    'id': pathid,
                     'd': line(data),
                     'stroke': color,
                     'fill': 'none',
@@ -245,6 +269,7 @@
         };
 
         var create_point = function (data, path, color) {
+            //console.log(path[0][0].id);
             svg.selectAll("path circle")
                 .data(data)
                 .enter()
@@ -259,6 +284,7 @@
                     "r": function (d) {
                         return Math.sqrt(Math.pow(StrokeWidth, 2));
                     },
+                    'class': path[0][0].id,
                     'stroke': color,
                     'fill': color,
                     'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
@@ -291,23 +317,6 @@
                 });
         };
 
-        // 建立 Detail 的區塊
-        var create_detail_dom = function (dom) {
-            var svgNextDom = $(dom).next();
-            var svgDomID = $(dom)[0].id;
-            if (svgNextDom[0].nodeName === 'SCRIPT') {
-                $(dom).after('<div id="' + svgDomID + 'Detail"></div>');
-            } else {
-                svgNextDom.before('<div id="' + svgDomID + 'Detail"></div>');
-            }
-
-            svgDetailID = svgDomID + 'Detail';
-
-            $('#' + svgDomID + 'Detail')
-                .css({ 'margin-bottom': '1%' })
-                .attr({ 'width': width });
-        };
-
         // 設定 X 與 Y 軸的刻度數、曲線的粗度
         var set_pre_data = function (RuleData) {
             if (typeof RuleData.Xcount !== 'undefined' && typeof RuleData.Xcount === 'number') {
@@ -334,11 +343,38 @@
             var num = count + 1;
             var gid = 'g' + id;
             svg.append('g')
-                    .attr({
-                        'id': gid,
-                        'class': 'right_item',
-                        'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * num + ')'
+                .attr({
+                    'id': gid,
+                    'data-id': id,
+                    'class': 'right_item',
+                    'transform': 'translate(' + (width - left_padding * 3) + ',' + (bottom_padding * 1.5) * num + ')'
+                })
+                .on("click", function () {
+                    var fill_opacity;
+                    var stroke_opacity;
+                    if ($('#' + gid)[0].style.fillOpacity === "1" || $('#' + gid)[0].style.fillOpacity === "") {
+                        fill_opacity = 0.3;
+                        stroke_opacity = 0.3;
+                        $('#path' + id).hide();
+                        $('.path' + id).hide();
+                    } else {
+                        fill_opacity = 1;
+                        stroke_opacity = 1;
+                        $('#path' + id).show();
+                        $('.path' + id).show();
+                    }
+                    $('#' + gid).css({
+                        'fill-opacity': fill_opacity,
+                        'stroke-opacity': stroke_opacity
                     });
+                    //console.log($('#' + gid)[0].style.fillOpacity);
+                    $('.XY_frame').remove();
+                    var AjaxData = check_opacity_data();
+                    var obj = get_max_min(AjaxData);
+                    create_svg_frame(obj); // 建立 svg 的框架
+                    create_XY();
+                    //console.log(tmpAjaxData);
+                });
 
             d3.select('svg #' + gid).append('rect')
                 .attr({
@@ -357,14 +393,33 @@
                 .text(name);
         };
 
+        // 排除 opacity != 1
+        var check_opacity_data = function () {
+            //console.log($('.right_item'));
+            var fillOpacity = new Array();
+            var obj = $('.right_item');
+            for (var j = 0; j < obj.length; j++) {
+                if (obj[j].style.fillOpacity == "1" || obj[j].style.fillOpacity == "") {
+                    fillOpacity.push($(obj[j]).attr("data-id"));
+                }
+            }
+
+            var AjaxData = new Array();
+            //console.log(tmpAjaxData);
+            for (var i = 0; i < tmpAjaxData.length; i++) {
+                for (var j = 0; j < fillOpacity.length; j++) {
+                    if (tmpAjaxData[i].id === fillOpacity[j]) {
+                        AjaxData.push(tmpAjaxData[i]);
+                    }
+                }
+            }
+
+            return AjaxData;
+        };
+
         return {
             init: function (AjaxData, RuleData) {
-                var obj = get_max_min(AjaxData);
-                Xmax = obj.Xmax;
-                Xmin = obj.Xmin;
-                Ymax = obj.Ymax;
-                Ymin = obj.Ymin;
-                Lmax = obj.Lmax;
+                tmpAjaxData = AjaxData;
 
                 width = RuleData.width;
                 height = RuleData.height;
@@ -374,14 +429,20 @@
 
                 set_pre_data(RuleData);
 
-                create_svg_frame(RuleData.dom); // 建立 svg 的框架
+                domName = RuleData.dom;
+                var obj = get_max_min(AjaxData);
+                create_svg(domName);
+                create_svg_frame(obj); // 建立 svg 的框架
+
+                Xname = RuleData.Xname;
+                Yname = RuleData.Yname;
+
                 create_XY(); // 建立 XY 軸
 
                 for (var i = 0; i < AjaxData.length; i++) {
-                    var color = getRandomColor();
+                    var color = getRandomColor(AjaxData[i]);
                     svgDetailColor.push({ 'name': AjaxData[i].name, 'color': color });
                     create_line(AjaxData[i], color, i);
-                    //create_right_item(AjaxData[i], i, color);
                 }
 
                 console.log(AjaxData);
@@ -414,7 +475,9 @@
                 'dom': '#DivSvg',
                 //'Xcount': 10,
                 'Ycount': 10,
-                'StrokeWidth': 5
+                'StrokeWidth': 5,
+                'Xname': ' ( Year ) ',
+                'Yname': ' ( Nav / $ ) '
             };
 
             create_chart.init(AjaxData, RuleData);
@@ -425,11 +488,11 @@
     var get_max_min = function (AjaxData) {
         var xArr = new Array();
         var yArr = new Array();
-        var LArr = new Array();
+        //var LArr = new Array();
 
         for (var i = 0; i < AjaxData.length; i++) {
             var tmpObj = AjaxData[i].data;
-            LArr.push(tmpObj.length);
+            //LArr.push(tmpObj.length);
             for (var j = 0; j < tmpObj.length; j++) {
                 xArr.push(tmpObj[j].x);
                 yArr.push(tmpObj[j].y);
@@ -437,7 +500,7 @@
         }
 
         return {
-            'Lmax': Math.max.apply(null, LArr),
+            //'Lmax': Math.max.apply(null, LArr),
             'Xmax': Math.max.apply(null, xArr),
             'Xmin': Math.min.apply(null, xArr),
             'Ymax': Math.max.apply(null, yArr),
@@ -445,7 +508,10 @@
         };
     };
 
-    function getRandomColor() {
+    function getRandomColor(obj) {
+        if (typeof obj.color !== 'undefined') {
+            return obj.color;
+        }
         var letters = '0123456789ABCDEF'.split('');
         var color = '#';
         for (var i = 0; i < 6; i++) {
