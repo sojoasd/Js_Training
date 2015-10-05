@@ -155,6 +155,7 @@
             xAxis = d3.svg.axis()
                             .scale(scaleX)
                             .orient("bottom")
+                            .tickFormat(function (d) { return d.toString(); })
                             .ticks(Xcount);
 
             /* 建立 Y 軸 */
