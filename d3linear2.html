@@ -7,6 +7,11 @@
     <script type="text/javascript" src="d3.v3.js"></script>
     <script src="jquery-1.11.2.min.js"></script>
     <style type="text/css">
+        /*.xyText {
+            fill: none;
+            stroke: #000;
+        }*/
+
         circle:hover {
             fill: red;
             stroke: red;
@@ -126,7 +131,7 @@
 
             scaleY = d3.scale.linear()
                            .range([height - (bottom_padding * 5), 0])
-                           .domain([Ymin - Math.round(Ymin / 2), Ymax + Math.round(Ymax / 2)]);
+                           .domain([Ymin - Math.round(Ymin / 3), Ymax + Math.round(Ymax / 3)]);
 
             /* 建立尺度 */
             line = d3.svg.line()
@@ -172,7 +177,7 @@
                  .call(xAxis)
                  .attr({
                      'fill': 'none',
-                     'class': 'XY_frame',
+                     'class': 'xAxis',
                      'stroke': '#000',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
                  })
@@ -190,7 +195,6 @@
 
             svg.append("text")
                 .attr({
-                    'class': 'XY_frame',
                     "text-anchor": "middle",
                     "transform": "translate(" + (width / 2) + "," + (height - (bottom_padding)) + ")"
                 })
@@ -201,7 +205,7 @@
                 .attr({
                     'fill': 'none',
                     'stroke': '#000',
-                    'class': 'XY_frame',
+                    'class': 'yAxis',
                     'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
                 })
                 .selectAll('text')
@@ -214,7 +218,6 @@
 
             svg.append("text")
                .attr({
-                   'class': 'XY_frame',
                    "text-anchor": "middle",
                    "transform": "translate(" + (left_padding / 2) + "," + (height / 2) + ")rotate(-90)"
                })
@@ -223,7 +226,7 @@
             svg.append('g')
                  .call(xAxisGrid)
                  .attr({
-                     'class': 'XY_frame',
+                     'class': 'xAxisGrid',
                      'fill': 'none',
                      'stroke': 'rgba(0,0,0,.1)',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + (height - (bottom_padding * 4)) + ')'
@@ -232,7 +235,7 @@
             svg.append('g')
                  .call(yAxisGrid)
                  .attr({
-                     'class': 'XY_frame',
+                     'class': 'yAxisGrid',
                      'fill': 'none',
                      'stroke': 'rgba(0,0,0,.1)',
                      'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
@@ -338,6 +341,36 @@
             }
         };
 
+        // 更新 XY 軸與 Grid 的線條
+        var refresh_Axis_Grid_line = function () {
+            svg.select('.xAxis')
+		                .transition()
+		                .duration(700)
+		                .call(xAxis);
+
+            svg.select('.yAxis')
+                .transition()
+                .duration(700)
+                .call(yAxis);
+
+            svg.select('.xAxisGrid')
+                .transition()
+                .duration(700)
+                .call(xAxisGrid);
+
+            svg.select('.yAxisGrid')
+                .transition()
+                .duration(700)
+                .call(yAxisGrid);
+
+            svg.selectAll('.yAxis text')
+                .attr({
+                    'fill': '#000',
+                    'stroke': 'none',
+                })
+                .style({ 'font-size': '11px' });
+        };
+
         // count = 第幾筆資料
         var create_right_item = function (id, name, color, count) {
             var num = count + 1;
@@ -367,13 +400,12 @@
                         'fill-opacity': fill_opacity,
                         'stroke-opacity': stroke_opacity
                     });
-                    //console.log($('#' + gid)[0].style.fillOpacity);
-                    $('.XY_frame').remove();
+
                     var AjaxData = check_opacity_data();
                     var obj = get_max_min(AjaxData);
                     create_svg_frame(obj); // 建立 svg 的框架
-                    create_XY();
-                    //console.log(tmpAjaxData);
+
+                    refresh_Axis_Grid_line();
                 });
 
             d3.select('svg #' + gid).append('rect')
