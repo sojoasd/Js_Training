@@ -51,6 +51,12 @@
 <body>
     <div id="tooltip" class="hidden">
         <p><span id="value"></span></p>
+        <!--<svg style="width:100px;height:10px;padding:10px 10px 10px 10px;">
+            <g>
+                <rect width="10" height="10" fill="#0FDAFB" stroke="#0FDAFB"></rect>
+                <text style="font-size:10px" dx="20" dy="10">X:2010 ; Y:33</text>
+            </g>
+        </svg>-->
     </div>
     <div id="DivSvg"></div>
 
@@ -106,10 +112,12 @@
         var yAxisGrid; // 背景格線
         var xAxisGrid;
 
+        // 建立 svg 區塊
         var create_svg = function () {
             svg = d3.select(domName)
             .append("svg")
             .attr({
+                "class": 'svgclass',
                 "width": width,
                 "height": height
             })
@@ -118,6 +126,7 @@
             });
         };
 
+        // 建立 svg 內各種物件的條件 (但還沒建立)
         var create_svg_frame = function (obj) {
             Xmax = obj.Xmax;
             Xmin = obj.Xmin;
@@ -131,7 +140,7 @@
 
             scaleY = d3.scale.linear()
                            .range([height - (bottom_padding * 5), 0])
-                           .domain([Ymin - Math.round(Ymin / 3), Ymax + Math.round(Ymax / 3)]);
+                           .domain([Ymin - Math.round(Ymin / (Ymin * 1.5)), Ymax + Math.round(Ymax / (Ymin * 1.5))]);
 
             /* 建立尺度 */
             line = d3.svg.line()
@@ -171,6 +180,7 @@
                   .tickSize(-width + (left_padding * 5), 0);
         };
 
+        // 建立 XY 軸與 Grid 物件
         var create_XY = function () {
 
             svg.append('g')
@@ -292,32 +302,32 @@
                     'fill': color,
                     'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
                 })
-                .on("mouseover", function (d) {
-                    $(this).attr({
-                        "r": function () {
-                            return Math.sqrt(Math.pow(StrokeWidth, 2) * 2);
-                        }
-                    });
-
-                    // 取得點的位置 [scaleX(d.x),scaleY(d.y)]
-                    var xPosition = scaleX(d.x) + left_padding * 2.5;
-                    var yPosition = scaleY(d.y) + bottom_padding / 2;
-
-                    d3.select("#tooltip")
-                                .style("left", xPosition + "px")
-                                .style("top", yPosition + "px")
-                                .select("#value")
-                                .text("x: " + d.x + "; y: " + d.y);
-                    d3.select("#tooltip").classed("hidden", false);
-                })
-                .on("mouseout", function () {
-                    $(this).attr({
-                        "r": function () {
-                            return Math.sqrt(Math.pow(StrokeWidth, 2));
-                        }
-                    });
-                    d3.select("#tooltip").classed("hidden", true);
+            .on("mouseover", function (d) {
+                $(this).attr({
+                    "r": function () {
+                        return Math.sqrt(Math.pow(StrokeWidth, 2) * 2);
+                    }
                 });
+
+                // 取得點的位置 [scaleX(d.x),scaleY(d.y)]
+                var xPosition = scaleX(d.x) + left_padding * 2.5;
+                var yPosition = scaleY(d.y) + bottom_padding / 2;
+
+                d3.select("#tooltip")
+                            .style("left", xPosition + "px")
+                            .style("top", yPosition + "px")
+                            .select("#value")
+                            .text("x: " + d.x + "; y: " + d.y);
+                d3.select("#tooltip").classed("hidden", false);
+            })
+            .on("mouseout", function () {
+                $(this).attr({
+                    "r": function () {
+                        return Math.sqrt(Math.pow(StrokeWidth, 2));
+                    }
+                });
+                d3.select("#tooltip").classed("hidden", true);
+            });
         };
 
         // 設定 X 與 Y 軸的刻度數、曲線的粗度
@@ -449,6 +459,33 @@
             return AjaxData;
         };
 
+        var add_mouse_event = function () {
+            var timer;
+            d3.select('.svgclass').on('mousemove', function () {
+                var rangeX = d3.mouse(this)[0];
+                var invertX = parseInt(scaleX.invert(d3.mouse(this)[0])) - 1;
+
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    if (rangeX >= left_padding * 1.5 && rangeX <= (width - (left_padding * 5) + (left_padding * 1.5))) {
+                        console.log(invertX);
+                    }
+                }, 300);
+
+                //$('#tooltip svg').css({
+                //    'width': tooltip_width + 'px',
+                //    'height': tooltip_width * AjaxData.length,
+                //    'padding': tooltip_width + 'px'
+                //});
+                //var rangeX = d3.mouse(this)[0];
+
+                //if (rangeX >= left_padding * 1.5 && rangeX <= (width - (left_padding * 5) + (left_padding * 1.5))) {
+
+                //    console.log(parseInt(scaleX.invert(d3.mouse(this)[0])) - 1);
+                //}
+            });
+        };
+
         return {
             init: function (AjaxData, RuleData) {
                 tmpAjaxData = AjaxData;
@@ -477,7 +514,7 @@
                     create_line(AjaxData[i], color, i);
                 }
 
-                console.log(AjaxData);
+                add_mouse_event();
 
                 //$_child.append('<span>'++'</span>')
 
@@ -507,7 +544,7 @@
                 'dom': '#DivSvg',
                 //'Xcount': 10,
                 'Ycount': 10,
-                'StrokeWidth': 5,
+                'StrokeWidth': 3,
                 'Xname': ' ( Year ) ',
                 'Yname': ' ( Nav / $ ) '
             };
