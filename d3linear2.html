@@ -78,6 +78,20 @@
     };
     //console.log($('#DivSvg > svg')[0].offsetWidth);
 
+    String.prototype.padLeft = function () {
+        var str = "";
+        for (var i = 0; i < this.length; i++) { str += this[i]; }
+        return this.length <= 1 ? "0" + this[0] : str;
+    };
+
+    Date.prototype.yyyymmdd = function () {
+        var yyyy = this.getFullYear().toString();
+        var mm = (this.getMonth() + 1).toString();
+        var dd = this.getDate().toString();
+
+        return yyyy + "-" + mm.padLeft() + "-" + dd.padLeft();
+    };
+
     var create_chart = function () {
         var tmpAjaxData;
 
@@ -128,25 +142,41 @@
 
         var parseDate = d3.time.format("%Y-%m-%d").parse;
 
-        // 建立 svg 內各種物件的條件 (但還沒建立)
-        var create_svg_frame = function (obj, dateData) {
-            //console.log(obj);
-            //return;
-
+        var trans_data = function (dateData) {
             var data = dateData;
-
             data.forEach(function (d) {
                 d.x = parseDate(d.x);
             });
 
-            data.sort(function (a, b) {
-                return a.x - b.x;
-            });
+            return data;
+        };
 
-            Xmax = obj.Xmax;
-            Xmin = obj.Xmin;
-            Ymax = obj.Ymax;
-            Ymin = obj.Ymin;
+        var create_scale = function (dateData) {
+
+            var data = dateData;
+            if (typeof data[0].x === 'string') {
+                data = trans_data(data);
+            }
+
+            //var data = dateData;
+
+            //data.forEach(function (d) {
+            //    if (typeof d.x === 'string') {
+            //        d.x = parseDate(d.x);
+            //    }
+            //    else {
+            //        d.x = parseDate((d.x).yyyymmdd());
+            //    }
+            //});
+
+            //data.forEach(function (d) {
+            //    console.log(parseDate(d.x));
+            //    d.x = parseDate(d.x);
+            //});
+
+            //data.sort(function (a, b) {
+            //    return a.x - b.x;
+            //});
 
             // ※ range 扣多少 padding，下面的 Grid 線就要扣多少 (tickSize())，因為要跟軸線等長
             //scaleX = d3.scale.linear()
@@ -155,17 +185,29 @@
 
             scaleX = d3.time.scale()
                            .range([0, width - left_padding * 5])
-                           .domain([new Date(data[0].x), d3.time.day.offset(new Date(data[data.length - 1].x), 1)])
+                           .domain([data[0].x, data[data.length - 1].x])
             //.domain([Xmin, Xmax]);
 
             scaleY = d3.scale.linear()
                            .range([height - (bottom_padding * 5), 0])
                            .domain([Ymin, Ymax]);
+        };
+
+        // 建立 svg 內各種物件的條件 (但還沒建立)
+        var create_svg_frame = function (obj, AjaxData) {
+            //console.log(AjaxData);
+            Xmax = obj.Xmax;
+            Xmin = obj.Xmin;
+            Ymax = obj.Ymax;
+            Ymin = obj.Ymin;
+
+            for (var i = 0; i < AjaxData.length; i++) {
+                create_scale(AjaxData[i].data);
+            }
 
             /* 建立尺度 */
             line = d3.svg.line()
                           .x(function (d) {
-                              console.log(d.x);
                               return scaleX(d.x);
                           })
                           .y(function (d) {
@@ -177,7 +219,6 @@
             xAxis = d3.svg.axis()
                             .scale(scaleX)
                             .orient("bottom")
-                            //.ticks(1)
                             .tickFormat(function (d) {
                                 return d3.time.format('%Y/%m/%d')(new Date(d))
                             });
@@ -449,7 +490,8 @@
 
                     var AjaxData = check_opacity_data();
                     var obj = get_max_min(AjaxData);
-                    create_svg_frame(obj, AjaxData[0].data); // 建立 svg 的框架
+                    //console.log(AjaxData);
+                    create_svg_frame(obj, AjaxData); // 建立 svg 的框架
 
                     refresh_Axis_Grid_line();
                 });
@@ -539,7 +581,7 @@
                 domName = RuleData.dom;
                 var obj = get_max_min(AjaxData);
                 create_svg(domName);
-                create_svg_frame(obj, AjaxData[0].data); // 建立 svg 的框架
+                create_svg_frame(obj, AjaxData); // 建立 svg 的框架
 
                 Xname = RuleData.Xname;
                 Yname = RuleData.Yname;
@@ -552,7 +594,10 @@
                     create_line(AjaxData[i], color, i);
                 }
 
-                add_mouse_event();
+                //create_line(AjaxData[0], "red", 0);
+                //create_line(AjaxData[1], "blue", 1);
+
+                //add_mouse_event();
 
                 //$_child.append('<span>'++'</span>')
 
