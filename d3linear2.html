@@ -126,42 +126,69 @@
             });
         };
 
+        var parseDate = d3.time.format("%Y-%m-%d").parse;
+
         // 建立 svg 內各種物件的條件 (但還沒建立)
-        var create_svg_frame = function (obj) {
+        var create_svg_frame = function (obj, dateData) {
+            //console.log(obj);
+            //return;
+
+            var data = dateData;
+
+            data.forEach(function (d) {
+                d.x = parseDate(d.x);
+            });
+
+            data.sort(function (a, b) {
+                return a.x - b.x;
+            });
+
             Xmax = obj.Xmax;
             Xmin = obj.Xmin;
             Ymax = obj.Ymax;
             Ymin = obj.Ymin;
 
             // ※ range 扣多少 padding，下面的 Grid 線就要扣多少 (tickSize())，因為要跟軸線等長
-            scaleX = d3.scale.linear()
+            //scaleX = d3.scale.linear()
+            //               .range([0, width - left_padding * 5])
+            //               .domain([0, 100]);
+
+            scaleX = d3.time.scale()
                            .range([0, width - left_padding * 5])
-                           .domain([Xmin, Xmax]);
+                           .domain([new Date(data[0].x), d3.time.day.offset(new Date(data[data.length - 1].x), 1)])
+            //.domain([Xmin, Xmax]);
 
             scaleY = d3.scale.linear()
                            .range([height - (bottom_padding * 5), 0])
-                           .domain([Ymin - Math.round(Ymin / (Ymin * 1.5)), Ymax + Math.round(Ymax / (Ymin * 1.5))]);
+                           .domain([Ymin, Ymax]);
 
             /* 建立尺度 */
             line = d3.svg.line()
                           .x(function (d) {
+                              console.log(d.x);
                               return scaleX(d.x);
                           })
                           .y(function (d) {
                               return scaleY(d.y);
-                          });
+                          })
+            .interpolate('basis');
 
             /* 建立 X 軸 */
             xAxis = d3.svg.axis()
                             .scale(scaleX)
                             .orient("bottom")
-                            .tickFormat(function (d) { return d.toString(); })
-                            .ticks(Xcount);
+                            //.ticks(1)
+                            .tickFormat(function (d) {
+                                return d3.time.format('%Y/%m/%d')(new Date(d))
+                            });
+            //.tickFormat(function (d) { console.log(d); return d.toString(); })
+            //.ticks(Xcount);
 
             /* 建立 Y 軸 */
             yAxis = d3.svg.axis()
                             .scale(scaleY)
                             .orient("left")
+                            .tickFormat(_formatData)
                             .ticks(Ycount);
 
             /* 建立 X 軸的背景線條 */
@@ -180,6 +207,9 @@
                   .tickFormat("") // tickFormat 針對每一個刻度的數字，可設定為空值
                   .tickSize(-width + (left_padding * 5), 0);
         };
+
+        // 將軸上的刻度 Value 做 format，這有很多種 format 模式
+        var _formatData = d3.format(".1f");
 
         // 建立 XY 軸與 Grid 物件
         var create_XY = function () {
@@ -263,18 +293,23 @@
                     'd': line(data),
                     'stroke': color,
                     'fill': 'none',
+                    //'class': 'line',
                     'transform': 'translate(' + left_padding * 1.5 + ',' + bottom_padding + ')'
                 })
                 .style('stroke-width', StrokeWidth) // 趨勢線變粗
                 .transition()
+                //.delay(function (d, i) {
+                //    return i / tmpAjaxData.length * 1000;
+                //})
                 .duration(1000)
+                //.ease("cubic") // 控制動畫的效果，如快或慢
                 .attrTween('d', function () {
                     var interpolate = d3.scale.quantile()
                                         .domain([0, 1])
                                         .range(d3.range(1, data.length + 1));
                     return function (t) {
                         if (t === 1) {
-                            create_point(data, path, color);
+                            //create_point(data, path, color);
                             create_right_item(obj.id, obj.name, color, count);
                         }
                         return line(data.slice(0, interpolate(t)));
@@ -414,7 +449,7 @@
 
                     var AjaxData = check_opacity_data();
                     var obj = get_max_min(AjaxData);
-                    create_svg_frame(obj); // 建立 svg 的框架
+                    create_svg_frame(obj, AjaxData[0].data); // 建立 svg 的框架
 
                     refresh_Axis_Grid_line();
                 });
@@ -489,6 +524,8 @@
 
         return {
             init: function (AjaxData, RuleData) {
+                //console.log(AjaxData[0].data);
+                //return;
                 tmpAjaxData = AjaxData;
 
                 width = RuleData.width;
@@ -502,7 +539,7 @@
                 domName = RuleData.dom;
                 var obj = get_max_min(AjaxData);
                 create_svg(domName);
-                create_svg_frame(obj); // 建立 svg 的框架
+                create_svg_frame(obj, AjaxData[0].data); // 建立 svg 的框架
 
                 Xname = RuleData.Xname;
                 Yname = RuleData.Yname;
@@ -540,8 +577,8 @@
         $.getJSON("http://localhost:5705/API/ApiFun/", function (AjaxData) {
             //AjaxData[0].cuscolor = 'red';
             var RuleData = {
-                'height': 400,
-                'width': 800,
+                'height': 700,
+                'width': 1500,
                 'dom': '#DivSvg',
                 //'Xcount': 10,
                 'Ycount': 10,
@@ -549,7 +586,8 @@
                 'Xname': ' ( Year ) ',
                 'Yname': ' ( Nav / $ ) '
             };
-
+            //console.log(AjaxData);
+            //return;
             create_chart.init(AjaxData, RuleData);
         });
 
